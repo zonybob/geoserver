@@ -9,4 +9,16 @@
   <bean id="GeoRSSOutputFormat" class="org.geoserver.wfs.response.GeoRSSOutputFormat">
     <constructor-arg ref="geoServer"/>
   </bean>
+<!--   <bean id="ShortenedGeoRSSOutputFormat" class="org.geoserver.wfs.response.GeoRSSOutputFormat">
+    <constructor-arg ref="geoServer"/>
+    <constructor-arg value="georss"/>
+  </bean>
+  <bean id="FullyQualifiedGeoRSSOutputFormat" class="org.geoserver.wfs.response.GeoRSSOutputFormat">
+    <constructor-arg ref="geoServer"/>
+    <constructor-arg value="application/rss+xml"/>
+  </bean>
+  <bean id="ShortenedRSSOutputFormat" class="org.geoserver.wfs.response.GeoRSSOutputFormat">
+    <constructor-arg ref="geoServer"/>
+    <constructor-arg value="rss"/>
+  </bean> -->
 </beans>

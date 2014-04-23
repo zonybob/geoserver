@@ -37,7 +37,7 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 public abstract class GeoRSSTransformerBase extends TransformerBase {
     /** logger */
-    protected static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.georss");
+    protected static Logger LOGGER = org.geotools.util.logging.Logging.getLogger(GeoRSSTransformerBase.class);
     
     static final Configuration GML_CONFIGURATION = new GMLConfiguration();
 
@@ -234,70 +234,7 @@ public abstract class GeoRSSTransformerBase extends TransformerBase {
         public void element(String element, String content) {
             super.element(element, content);
         }
-//        
-//        @SuppressWarnings("unchecked")
-//        protected List loadFeatureCollections(WMSMapContent map) throws IOException {
-//            ReferencedEnvelope mapArea = map.getRenderingArea();
-//            CoordinateReferenceSystem wgs84 = null;
-//            FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
-//            try {
-//                // this should never throw an exception, but we have to deal with it anyways
-//                wgs84 = CRS.decode("EPSG:4326");
-//            } catch(Exception e) {
-//                throw (IOException) (new IOException("Unable to decode WGS84...").initCause(e));
-//            }
-//            
-//            List featureCollections = new ArrayList();
-//            for (Layer layer : map.layers()) {
-//                Query query = layer.getQuery();
-//
-//                SimpleFeatureCollection features = null;
-//                try {
-//                    SimpleFeatureSource source;
-//                    source = (SimpleFeatureSource) layer.getFeatureSource();
-//                    
-//                    GeometryDescriptor gd = source.getSchema().getGeometryDescriptor();
-//                    if(gd == null) {
-//                        // geometryless layers...
-//                        features = source.getFeatures(query);
-//                    } else {
-//                        // make sure we are querying the source with the bbox in the right CRS, if
-//                        // not, reproject the bbox
-//                        ReferencedEnvelope env = new ReferencedEnvelope(mapArea);
-//                        CoordinateReferenceSystem sourceCRS = gd.getCoordinateReferenceSystem();
-//                        if(sourceCRS != null && 
-//                            !CRS.equalsIgnoreMetadata(mapArea.getCoordinateReferenceSystem(), sourceCRS)) {
-//                            env = env.transform(sourceCRS, true);
-//                        }
-//                        
-//                        // build the mixed query
-//                        Filter original = query.getFilter();
-//                        Filter bbox = ff.bbox(gd.getLocalName(), env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY(), null);
-//                        query.setFilter(ff.and(original, bbox));
-//
-//                        // query and eventually reproject
-//                        features = source.getFeatures(query);
-//                        if(sourceCRS != null && !CRS.equalsIgnoreMetadata(wgs84, sourceCRS)) { 
-//                            ReprojectingFeatureCollection coll = new ReprojectingFeatureCollection(features, wgs84);
-//                            coll.setDefaultSource(sourceCRS);
-//                            features = coll;
-//                        }
-//                        
-//                        if (features == null) 
-//                            throw new NullPointerException();
-//                        
-//                        featureCollections.add(features);
-//                       
-//                    }
-//                } catch (Exception e) {
-//                    String msg = "Unable to encode map layer: " + layer;
-//                    LOGGER.log(Level.SEVERE, msg, e);
-//                }
-//            }
-//
-//            return featureCollections;
-//        }
-//        
+
         public void characters(char[] ch, int start, int length) throws SAXException {
             String string = new String(ch, start, length);
             chars(string);

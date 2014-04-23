@@ -65,8 +65,8 @@ public class RSSGeoRSSTransformer extends GeoRSSTransformerBase {
             start("rss", atts);
             start("channel");
             
-            element( "title", AtomUtils.getFeedTitle(this.op) );
-            element("description", AtomUtils.getFeedDescription(this.op) );
+            element( "title", AtomUtils.getFeedTitle(this.op, this.gs) );
+            element("description", AtomUtils.getFeedDescription(this.op, this.gs) );
             
             start( "link" );
             cdata(AtomUtils.getFeedURL(this.op));
@@ -88,9 +88,10 @@ public class RSSGeoRSSTransformer extends GeoRSSTransformerBase {
             end("rss");
         }
 
-        void encodeItems(FeatureCollectionResponse featureCollection) throws IOException {
+        @SuppressWarnings("rawtypes")
+		void encodeItems(FeatureCollectionResponse featureCollection) throws IOException {
         	List<FeatureCollection> resultsList = featureCollection.getFeatures();
-            for (Iterator f = resultsList.iterator(); f.hasNext(); ) {
+            for (Iterator<FeatureCollection> f = resultsList.iterator(); f.hasNext(); ) {
                 SimpleFeatureCollection features = (SimpleFeatureCollection) f.next();
                 FeatureIterator <SimpleFeature> iterator = null;
 
@@ -146,7 +147,7 @@ public class RSSGeoRSSTransformer extends GeoRSSTransformerBase {
             end("guid");
 
             start("description");
-            cdata(AtomUtils.getFeatureDescription(feature));
+            cdata(description);
             end("description");
             
             GeometryCollection col = feature.getDefaultGeometry() instanceof GeometryCollection 

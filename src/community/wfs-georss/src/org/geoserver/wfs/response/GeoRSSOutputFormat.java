@@ -3,6 +3,8 @@ package org.geoserver.wfs.response;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import javax.xml.transform.TransformerException;
 
@@ -10,6 +12,7 @@ import org.geoserver.config.GeoServer;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.WFSGetFeatureOutputFormat;
+import org.geoserver.wfs.json.JSONType;
 import org.geoserver.wfs.request.FeatureCollectionResponse;
 
 /**
@@ -19,18 +22,35 @@ import org.geoserver.wfs.request.FeatureCollectionResponse;
  */
 public class GeoRSSOutputFormat extends WFSGetFeatureOutputFormat {
 	
-    public static final String formatName = "GeoRSS";
+    public static String formatName = "GeoRSS";
     public static final String MIME_TYPE = "application/rss+xml";
 
 	public GeoRSSOutputFormat(GeoServer gs) {
 		super(gs, formatName);
 	}
+	
+	/**
+	 * Constructor to allow formats to be specified in the applicationContext.xml
+	 * @param gs
+	 * @param selectedFormat
+	 */
+	public GeoRSSOutputFormat(GeoServer gs, String selectedFormat) {
+		super(gs, selectedFormat);
+	}
 
     /**
      * Returns the mime type
      */
+	@Override
     public String getMimeType(Object value, Operation operation) throws ServiceException {
         return MIME_TYPE;
+    }
+	
+    /**
+     * capabilities output format string.
+     */
+    public String getCapabilitiesElementName() {
+        return formatName;
     }
 	
 	@Override
