@@ -238,7 +238,7 @@ public class FeatureTemplate {
      */   
     public String link(SimpleFeature feature) throws IOException {
     	caw.reset();
-    	title(feature, caw);
+    	link(feature, caw);
     	
     	return caw.toString();
     }
