@@ -181,8 +181,7 @@ public class FeatureTemplate {
      *
      * @throws IOException Any errors that occur during execution of the template.
      */
-    public void description(SimpleFeature feature, Writer writer)
-        throws IOException {
+    public void description(SimpleFeature feature, Writer writer) throws IOException {
         execute(feature, feature.getFeatureType(), writer, "description.ftl",null);
     }
     
