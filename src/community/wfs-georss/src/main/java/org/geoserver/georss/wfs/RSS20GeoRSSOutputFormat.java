@@ -1,18 +1,17 @@
-package org.geoserver.wfs.response;
+package org.geoserver.georss.wfs;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.HashSet;
 
 import javax.xml.transform.TransformerException;
 
 import org.geoserver.config.GeoServer;
+import org.geoserver.georss.GeoRSSTransformerBase;
+import org.geoserver.georss.RSS20GeoRSSTransformer;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.WFSGetFeatureOutputFormat;
-import org.geoserver.wfs.json.JSONType;
 import org.geoserver.wfs.request.FeatureCollectionResponse;
 
 /**
@@ -20,12 +19,12 @@ import org.geoserver.wfs.request.FeatureCollectionResponse;
  * @author Jonathan Meyer, Applied Information Sciences, jon@gisjedi.com
  *
  */
-public class GeoRSSOutputFormat extends WFSGetFeatureOutputFormat {
+public class RSS20GeoRSSOutputFormat extends WFSGetFeatureOutputFormat {
 	
     public static String formatName = "GeoRSS";
     public static final String MIME_TYPE = "application/rss+xml";
 
-	public GeoRSSOutputFormat(GeoServer gs) {
+	public RSS20GeoRSSOutputFormat(GeoServer gs) {
 		super(gs, formatName);
 	}
 	
@@ -34,7 +33,7 @@ public class GeoRSSOutputFormat extends WFSGetFeatureOutputFormat {
 	 * @param gs
 	 * @param selectedFormat
 	 */
-	public GeoRSSOutputFormat(GeoServer gs, String selectedFormat) {
+	public RSS20GeoRSSOutputFormat(GeoServer gs, String selectedFormat) {
 		super(gs, selectedFormat);
 	}
 
@@ -57,7 +56,7 @@ public class GeoRSSOutputFormat extends WFSGetFeatureOutputFormat {
 	protected void write(FeatureCollectionResponse featureCollection, OutputStream output,
 			Operation op) throws IOException, ServiceException {
 		
-		RSSGeoRSSTransformer tx = new RSSGeoRSSTransformer(gs, op);
+		RSS20GeoRSSTransformer tx = new RSS20GeoRSSTransformer(gs, op);
 		
 		if (featureCollection.getFormatOptions() != null && featureCollection.getFormatOptions().containsKey("encoding")) {			
 			String geometryEncoding = (String) featureCollection.getFormatOptions().get("encoding");

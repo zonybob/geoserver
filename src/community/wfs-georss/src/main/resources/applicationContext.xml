@@ -6,7 +6,7 @@
  -->
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd"> 
 <beans>
-  <bean id="GeoRSSOutputFormat" class="org.geoserver.wfs.response.GeoRSSOutputFormat">
+  <bean id="RSS20GeoRSSOutputFormat" class="org.geoserver.georss.wfs.RSS20GeoRSSOutputFormat">
     <constructor-arg ref="geoServer"/>
   </bean>
 <!--   <bean id="ShortenedGeoRSSOutputFormat" class="org.geoserver.wfs.response.GeoRSSOutputFormat">

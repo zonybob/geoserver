@@ -2,7 +2,7 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geoserver.wfs.response;
+package org.geoserver.georss.template;
 
 import java.io.CharArrayWriter;
 import java.io.IOException;
@@ -171,6 +171,19 @@ public class FeatureTemplate {
     public void title(SimpleFeature feature, Writer writer) throws IOException {
         execute(feature, feature.getFeatureType(), writer, "title.ftl",null);
     }
+    
+    /**
+     * Executes the publication date template for a feature writing the results to a
+     * writer.
+     *
+     * @param feature The feature to execute the template against.
+     * @param writer The writer to write the template output to.
+     *
+     * @throws IOException Any errors that occur during execution of the template.
+     */
+    public void pubdate(SimpleFeature feature, Writer writer) throws IOException {
+        execute(feature, feature.getFeatureType(), writer, "pubdate.ftl",null);
+    }
 
     /**
      * Executes the description template for a feature writing the results to a
@@ -184,6 +197,19 @@ public class FeatureTemplate {
     public void description(SimpleFeature feature, Writer writer) throws IOException {
         execute(feature, feature.getFeatureType(), writer, "description.ftl",null);
     }
+
+    /**
+     * Executes the enclosure template for a feature writing the results to a
+     * writer.
+     *
+     * @param feature The feature to execute the template against.
+     * @param writer The writer to write the template output to.
+     *
+     * @throws IOException Any errors that occur during execution of the template.
+     */
+    public void enclosure(SimpleFeature feature, Writer writer) throws IOException {
+        execute(feature, feature.getFeatureType(), writer, "enclosure.ftl",null);
+    }
     
     /**
      * Executes the link template for a feature writing the results to a writer.
@@ -196,6 +222,21 @@ public class FeatureTemplate {
     public void link(SimpleFeature feature, Writer writer) throws IOException
     {
     	execute(feature, feature.getFeatureType(), writer, "link.ftl", null);
+    }
+    
+    /**
+     * Executes the publication date template for a feature returning the result as a
+     * string.
+     *
+     * @param feature The feature to execute the template against.
+     *
+     * @throws IOException Any errors that occur during execution of the template.
+     */
+    public String pubdate(SimpleFeature feature) throws IOException {
+        caw.reset();
+        pubdate(feature, caw);
+
+        return caw.toString();
     }
 
     /**
@@ -226,6 +267,21 @@ public class FeatureTemplate {
         description(feature, caw);
 
         return caw.toString();
+    }
+    
+    /**
+     * Executes the enclosure template for a feature returning the result as a
+     * string.
+     *
+     * @param feature The feature to execute the template against.
+     *
+     * @throws IOException Any errors that occur during execution of the template.
+     */   
+    public String enclosure(SimpleFeature feature) throws IOException {
+    	caw.reset();
+    	enclosure(feature, caw);
+    	
+    	return caw.toString();
     }
     
     /**

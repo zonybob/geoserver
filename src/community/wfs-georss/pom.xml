@@ -14,11 +14,11 @@
 	<artifactId>community</artifactId>
 	<version>2.4-SNAPSHOT</version>
   </parent>
-
+ 
   <groupId>org.geoserver</groupId>
   <artifactId>wfs-georss</artifactId>
   <packaging>jar</packaging>
-  <version>1.0</version>
+  <version>0.1</version>
   <name>GeoRSS extension output format for WFS</name>
 
   <dependencies>

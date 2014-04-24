@@ -2,7 +2,7 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geoserver.wfs.response;
+package org.geoserver.georss;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -24,18 +24,18 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 
 /**
- * Encodes an RSS feed tagged with geo information.
+ * Encodes an RSS feed tagged with geo information in RSS 2.0 format.
  *
  * @author Justin Deoliveira, The Open Planning Project, jdeolive@openplans.org
  * @author Jonathan Meyer, Applied Information Sciences, jon@gisjedi.com
  *
  */
-public class RSSGeoRSSTransformer extends GeoRSSTransformerBase {
+public class RSS20GeoRSSTransformer extends GeoRSSTransformerBase {
     
     private GeoServer gs;
     private Operation op;
 
-    public RSSGeoRSSTransformer(GeoServer gs, Operation op){
+    public RSS20GeoRSSTransformer(GeoServer gs, Operation op){
         this.gs = gs;
         this.op = op;
     }
@@ -125,17 +125,28 @@ public class RSSGeoRSSTransformer extends GeoRSSTransformerBase {
             String title = feature.getID();
             String link = null; 
             String description = "[Error while loading description]";
+            String enclosure = "";
+            String pubDate = "";
 
             try {
                 title = AtomUtils.getFeatureTitle(feature);
                 link = AtomUtils.getEntryURL(feature);
                 description = AtomUtils.getFeatureDescription(feature);
+                enclosure = AtomUtils.getFeatureEnclosure(feature);
+                pubDate = AtomUtils.getFeaturePubDate(feature);
             } catch( Exception e ) {
-                String msg = "Error occured executing title template for: " + feature.getID();
+                String msg = "Error occured executing templates for: " + feature.getID();
                 LOGGER.log( Level.WARNING, msg, e );
             }
 
             element("title", title);
+            
+            // if the pubdate is set, create an appropriate element wrapper for it
+            if (pubDate.length() > 0) {
+            	start("pubDate");
+            	chars(pubDate);
+            	end("pubDate");
+            }
             
             //create the link as getFeature request with fid filter
             start("link");
@@ -149,6 +160,9 @@ public class RSSGeoRSSTransformer extends GeoRSSTransformerBase {
             start("description");
             cdata(description);
             end("description");
+            
+            // Add enclosure 
+            chars(enclosure);
             
             GeometryCollection col = feature.getDefaultGeometry() instanceof GeometryCollection 
                 ? (GeometryCollection) feature.getDefaultGeometry()
