@@ -9,11 +9,13 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -119,11 +121,32 @@ public final class AtomUtils {
         }
     }
     
-    public static String getFeatureEnclosure(SimpleFeature feature){
+    public static List<HashMap<String, String>> getFeatureEnclosure(SimpleFeature feature){
         try{
-            return featureTemplate.enclosure(feature);
+        	String template = featureTemplate.enclosure(feature);
+        	String[] lines = template.split("[\\r\\n]+");
+        	List<HashMap<String, String>> enclosures = new ArrayList<HashMap<String, String>>();
+        	HashMap<String, String> enclosure = new HashMap<String, String>();
+        	for (String line : lines) {
+        		line = line.trim();
+        		if (line.startsWith("url")){
+        			enclosure.put("url",line.split("=")[1]);
+        		} else if (line.startsWith("length")) {
+        			enclosure.put("length", line.split("=")[1]);
+        		} else if (line.startsWith("type")) {
+        			enclosure.put("type", line.split("=")[1]);
+        		}
+        		
+        		if (enclosure.containsKey("url") && enclosure.containsKey("length") && enclosure.containsKey("type")) {
+        			enclosures.add(enclosure);
+        			enclosure = new HashMap<String, String>();
+        		}
+        	}
+        	
+            return enclosures;
         } catch (IOException ioe) {
-            return feature.getID();
+        	LOGGER.log(Level.WARNING, "Unable to execute enclosure.ftl", ioe);
+            return null;
         }
     }
     

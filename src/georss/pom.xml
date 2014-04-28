@@ -16,7 +16,8 @@
 	<groupId>org.geoserver</groupId>
 	<artifactId>georss</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1.2</version>
+<!-- Disabled so that we didn't need to specify version on web/app/pom.xml
+	<version>0.1.2</version> -->
 	<name>GeoRSS support for GeoServer</name>
 <!-- Only for use in aggregator pom 
 	<profiles>

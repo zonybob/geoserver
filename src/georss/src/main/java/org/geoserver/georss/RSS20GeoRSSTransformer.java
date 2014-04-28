@@ -5,6 +5,7 @@
 package org.geoserver.georss;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -34,6 +35,7 @@ public class RSS20GeoRSSTransformer extends GeoRSSTransformerBase {
     
     private GeoServer gs;
     private Operation op;
+    private Boolean continuation = false;
 
     public RSS20GeoRSSTransformer(GeoServer gs, Operation op){
         this.gs = gs;
@@ -44,7 +46,15 @@ public class RSS20GeoRSSTransformer extends GeoRSSTransformerBase {
         return new RSSGeoRSSTranslator(this.gs, handler, this.op);
     }
 
-    class RSSGeoRSSTranslator extends GeoRSSTranslatorSupport {
+    public Boolean getContinuation() {
+		return continuation;
+	}
+
+	public void setContinuation(Boolean continuation) {
+		this.continuation = continuation;
+	}
+
+	class RSSGeoRSSTranslator extends GeoRSSTranslatorSupport {
         private GeoServer gs;
         private Operation op;
 
@@ -125,7 +135,7 @@ public class RSS20GeoRSSTransformer extends GeoRSSTransformerBase {
             String title = feature.getID();
             String link = null; 
             String description = "[Error while loading description]";
-            String enclosure = "";
+            List<HashMap<String, String>> enclosure = null;
             String pubDate = "";
 
             try {
@@ -162,7 +172,17 @@ public class RSS20GeoRSSTransformer extends GeoRSSTransformerBase {
             end("description");
             
             // Add enclosure 
-            chars(enclosure);
+            if (enclosure != null)
+            {
+            	for (HashMap<String, String> item : enclosure) {
+            		AttributesImpl atts = new AttributesImpl();
+            		for (String att : item.keySet())
+            		{
+            			atts.addAttribute(null, att, att, null, item.get(att));
+            		}
+                    element("enclosure", null, atts);
+            	}
+            }
             
             GeometryCollection col = feature.getDefaultGeometry() instanceof GeometryCollection 
                 ? (GeometryCollection) feature.getDefaultGeometry()
@@ -176,8 +196,12 @@ public class RSS20GeoRSSTransformer extends GeoRSSTransformerBase {
                 geometryEncoding.encode(col.getGeometryN(0), this);
                 end("item");
 
-                for (int i = 1; i < col.getNumGeometries(); i++){
-                    encodeRelatedGeometryItem(col.getGeometryN(i), title, link, i);
+                // By default we do not want to create continuation entries
+                // This can be overridden by the use of the continuation format options parameter
+                if (continuation) {
+	                for (int i = 1; i < col.getNumGeometries(); i++){
+	                    encodeRelatedGeometryItem(col.getGeometryN(i), title, link, i);
+	                }
                 }
             }
         }
