@@ -12,9 +12,3 @@ url=http://www.scripting.com/mp3s/weatherReportSuite.mp3
 length=12216320
 type=audio/mpeg
 -->
-url=http://www.scripting.com/mp3s/weatherReportSweet.mp3
-length=123
-type=audio/mp3
-url=http://www.scripting.com/mp3s/weatherReportSuite.mp3
-length=12216320
-type=audio/mpeg
