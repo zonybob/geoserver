@@ -1493,6 +1493,7 @@
   <module>gwc</module>
   <module>rest</module>
   <module>restconfig</module>
+  <module>georss</module>
   <module>web</module>
   <module>community</module>
   <module>extension</module>
