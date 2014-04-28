@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ Copyright (c) 2001 - 2013 OpenPlans - www.openplans.org. All rights reserved.
+ This code is licensed under the GPL 2.0 license, available at the root
+ application directory.
+ -->
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd"> 
+<beans>
+  <bean id="RSS20GeoRSSOutputFormat" class="org.geoserver.georss.wfs.RSS20GeoRSSOutputFormat">
+    <constructor-arg ref="geoServer"/>
+  </bean>
+<!--   <bean id="ShortenedGeoRSSOutputFormat" class="org.geoserver.wfs.response.GeoRSSOutputFormat">
+    <constructor-arg ref="geoServer"/>
+    <constructor-arg value="georss"/>
+  </bean>
+  <bean id="FullyQualifiedGeoRSSOutputFormat" class="org.geoserver.wfs.response.GeoRSSOutputFormat">
+    <constructor-arg ref="geoServer"/>
+    <constructor-arg value="application/rss+xml"/>
+  </bean>
+  <bean id="ShortenedRSSOutputFormat" class="org.geoserver.wfs.response.GeoRSSOutputFormat">
+    <constructor-arg ref="geoServer"/>
+    <constructor-arg value="rss"/>
+  </bean> -->
+</beans>
