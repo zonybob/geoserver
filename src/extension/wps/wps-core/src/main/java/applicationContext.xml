@@ -200,6 +200,8 @@
       <constructor-arg index="0" ref="catalog"/>
     </bean>
     
+    <bean id="intensityByTime" class="org.geoserver.wps.density.IntensityByTime" />
+    
     <!--
     Factory for deprecated processes 
     -->
