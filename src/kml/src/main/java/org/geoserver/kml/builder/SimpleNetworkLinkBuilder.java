@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.geoserver.catalog.LayerInfo;
 import org.geoserver.kml.KmlEncodingContext;
 import org.geoserver.kml.decorator.LookAtDecoratorFactory;
 import org.geoserver.kml.utils.LookAtOptions;
@@ -68,7 +69,10 @@ public class SimpleNetworkLinkBuilder extends AbstractNetworkLinkBuilder {
         for (int i = 0; i < layers.size(); i++) {
             MapLayerInfo layerInfo = layers.get(i);
             NetworkLink nl = container.createAndAddNetworkLink();
-            nl.setName(layerInfo.getName());
+            nl.setName(layerInfo.getLabel());
+            if (layerInfo.getDescription() != null && layerInfo.getDescription().length() > 0) {
+                nl.setDescription(layerInfo.getDescription());
+            }
             nl.setVisibility(true);
             nl.setOpen(true);
 

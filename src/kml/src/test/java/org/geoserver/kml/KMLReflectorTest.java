@@ -104,8 +104,7 @@ public class KMLReflectorTest extends WMSTestSupport {
      */
     @Test
     public void testNoBBOXInHREF() throws Exception {
-        final String layerName = MockData.BASIC_POLYGONS.getPrefix() + ":"
-                + MockData.BASIC_POLYGONS.getLocalPart();
+        final String layerName = MockData.BASIC_POLYGONS.getLocalPart();
         final XpathEngine xpath = XMLUnit.newXpathEngine();
         String requestURL = "wms/kml?mode=refresh&layers=" + layerName;
         Document dom = getAsDOM(requestURL);
@@ -196,6 +195,7 @@ public class KMLReflectorTest extends WMSTestSupport {
     public void testWmsRepeatedLayerWithNonStandardStyleAndCqlFiler() throws Exception {
         final String layerName = MockData.BASIC_POLYGONS.getPrefix() + ":"
                 + MockData.BASIC_POLYGONS.getLocalPart();
+        final String titleName = MockData.BASIC_POLYGONS.getLocalPart();
 
         String requestUrl = "wms/kml?mode=refresh&layers=" + layerName + "," + layerName
                 + "&styles=Default,Default&cql_filter=att1<10;att1>1000";
@@ -205,9 +205,9 @@ public class KMLReflectorTest extends WMSTestSupport {
 
         assertXpathEvaluatesTo("2",
                 "count(kml:kml/kml:Document/kml:NetworkLink)", dom);
-        assertXpathEvaluatesTo(layerName,
+        assertXpathEvaluatesTo(titleName,
                 "kml:kml/kml:Document/kml:NetworkLink[1]/kml:name", dom);
-        assertXpathEvaluatesTo(layerName,
+        assertXpathEvaluatesTo(titleName,
                 "kml:kml/kml:Document/kml:NetworkLink[2]/kml:name", dom);
 
         XpathEngine xpath = XMLUnit.newXpathEngine();
