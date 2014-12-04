@@ -1219,43 +1219,56 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
 
         List<Object> layersOrGroups = new ArrayList<Object>();
 
-        // Grab remote OWS data store if needed
-        DataStore remoteWFS = null;
-        final List<String> remoteTypeNames = new ArrayList<String>();
-        if ("WFS".equals(remoteOwsType) && remoteOwsUrl != null) {
-            remoteWFS = connectRemoteWFS(remoteOwsUrl);
-            remoteTypeNames.addAll(Arrays.asList(remoteWFS.getTypeNames()));
-            Collections.sort(remoteTypeNames);
-        }
-
-        // //
-        // Layer lookup requires to:
-        // * Look into the remote OWS first
-        // * Look among the local layers
-        // * expand local grouped layers (flatten them)
-        // //
-        for (String layerName : requestedLayerNames) {
-            // search into the remote WFS if there is any
-            if (remoteTypeNames.contains(layerName)) {
-                SimpleFeatureSource remoteSource;
-                remoteSource = remoteWFS.getFeatureSource(layerName);
-                if (remoteSource != null) {
-                    layersOrGroups.add(new MapLayerInfo(remoteSource));
-                    continue;
+        // If the OVERVIEW-ALL keyword is passed to layers select everything advertised!
+        if (requestedLayerNames.size() == 1
+                && (requestedLayerNames.get(0).equalsIgnoreCase("overview-all") ||
+                        requestedLayerNames.get(0).toLowerCase().endsWith(":overview-all"))) {
+            for (LayerInfo layer : wms.getLayers()) {
+                if (layer.isAdvertised()) {
+                    layersOrGroups.add(layer);
                 }
             }
+        } else {
 
-            // not a remote layer, lets look up for a registered one
-            LayerInfo layerInfo = wms.getLayerByName(layerName);
-            if (layerInfo != null) {
-                layersOrGroups.add(layerInfo);
-            } else {
-                LayerGroupInfo layerGroup = wms.getLayerGroupByName(layerName);
-                if (layerGroup == null || LayerGroupInfo.Mode.CONTAINER.equals(layerGroup.getMode())) {
-                    throw new ServiceException("Could not find layer " + layerName, 
-                            "LayerNotDefined", "layers");
+            // Grab remote OWS data store if needed
+            DataStore remoteWFS = null;
+            final List<String> remoteTypeNames = new ArrayList<String>();
+            if ("WFS".equals(remoteOwsType) && remoteOwsUrl != null) {
+                remoteWFS = connectRemoteWFS(remoteOwsUrl);
+                remoteTypeNames.addAll(Arrays.asList(remoteWFS.getTypeNames()));
+                Collections.sort(remoteTypeNames);
+            }
+
+            // //
+            // Layer lookup requires to:
+            // * Look into the remote OWS first
+            // * Look among the local layers
+            // * expand local grouped layers (flatten them)
+            // //
+            for (String layerName : requestedLayerNames) {
+                // search into the remote WFS if there is any
+                if (remoteTypeNames.contains(layerName)) {
+                    SimpleFeatureSource remoteSource;
+                    remoteSource = remoteWFS.getFeatureSource(layerName);
+                    if (remoteSource != null) {
+                        layersOrGroups.add(new MapLayerInfo(remoteSource));
+                        continue;
+                    }
                 }
-                layersOrGroups.add(layerGroup);
+
+                // not a remote layer, lets look up for a registered one
+                LayerInfo layerInfo = wms.getLayerByName(layerName);
+                if (layerInfo != null) {
+                    layersOrGroups.add(layerInfo);
+                } else {
+                    LayerGroupInfo layerGroup = wms.getLayerGroupByName(layerName);
+                    if (layerGroup == null
+                            || LayerGroupInfo.Mode.CONTAINER.equals(layerGroup.getMode())) {
+                        throw new ServiceException("Could not find layer " + layerName,
+                                "LayerNotDefined", "layers");
+                    }
+                    layersOrGroups.add(layerGroup);
+                }
             }
         }
         // pre GEOS-2652
@@ -1272,7 +1285,8 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
         // boolean found = false;
         // String catalogLayerName = null;
         //
-        // for (Iterator c_keys = catalog.getLayerNames().iterator(); c_keys.hasNext();) {
+        // for (Iterator c_keys = catalog.getLayerNames().iterator();
+        // c_keys.hasNext();) {
         // catalogLayerName = (String) c_keys.next();
         //
         // try {
@@ -1297,14 +1311,16 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
         // }
         // }
         // if(!found)
-        // throw new ServiceException("Could not find layer " + layerName,"LayerNotDefined");
+        // throw new ServiceException("Could not find layer " +
+        // layerName,"LayerNotDefined");
         // }
 
         // }
         // }
 
         if (layersOrGroups.size() == 0) {
-            throw new ServiceException("No LAYERS has been requested", getClass().getName());
+            throw new ServiceException("No LAYERS parameter value has been given", getClass()
+                    .getName());
         }
         return layersOrGroups;
     }
