@@ -13,6 +13,7 @@ import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -114,17 +115,30 @@ public class GetLegendGraphicKvpReader extends KvpRequestReader {
         // throw new WmsException("Invalid SLD version number \"" + version
         // + "\"");
         // }
-        final String layer = (String) rawKvp.get("LAYER");
+        final List<String> layerList = new ArrayList();
+        final String layerSingle = ((String) rawKvp.get("LAYER"));
+        final String layerMulti = (String) rawKvp.get("LAYERS");
         final boolean strict = rawKvp.containsKey("STRICT") ? Boolean.valueOf((String) rawKvp
                 .get("STRICT")) : request.isStrict();
         request.setStrict(strict);
-        if (strict && layer == null) {
-            throw new ServiceException("LAYER parameter not present for GetLegendGraphic",
+        if (strict && layerSingle == null && layerMulti == null) {
+            throw new ServiceException("Neither LAYER or LAYERS parameter present for GetLegendGraphic",
                     "LayerNotDefined");
+        }
+        if (strict && layerSingle != null && layerMulti != null) {
+            throw new ServiceException("Both LAYER and LAYERS parameter present for GetLegendGraphic",
+                    "ConflictingLayersDefinition");
         }
         if (strict && request.getFormat() == null) {
             throw new ServiceException("Missing FORMAT parameter for GetLegendGraphic",
                     "MissingFormat");
+        }
+        
+        if (layerSingle != null) {
+            layerList.add(layerSingle);
+        }
+        if (layerMulti != null) {
+            layerList.addAll(Arrays.asList(layerMulti.split(",")));
         }
 
         // object representing the layer or layer group requested
@@ -133,11 +147,23 @@ public class GetLegendGraphicKvpReader extends KvpRequestReader {
         // list of layers to render in the legend (we can have more
         // than one if a layergroup is requested)
         List<FeatureType> layers = new ArrayList<FeatureType>();
-        if (layer != null) {
+        List<Style> styles = new ArrayList<Style>();
+
+        if (layerList.size() == 0) {
+            layers.add(null);
+            request.setLayers(layers);
+
+//            throw new ServiceException(
+//                    "No layers defined by LAYER or LAYERS parameters for GetLegendGraphic",
+//                    "LayerNotDefined");
+        }
+        
+        for (String layer : layerList) {
             try {
                 LayerInfo layerInfo = wms.getLayerByName(layer);
                 if (layerInfo != null) {
                     addLayer(layers,layerInfo,request);
+                    styles.add(layerInfo.getDefaultStyle().getStyle());
                     infoObject=layerInfo;
                 } else {
                     LayerGroupInfo layerGroupInfo = wms.getLayerGroupByName(layer);
@@ -145,6 +171,7 @@ public class GetLegendGraphicKvpReader extends KvpRequestReader {
                         // add all single layers of the group
                         for(LayerInfo singleLayer : layerGroupInfo.layers()) {
                             addLayer(layers,singleLayer,request);
+                            styles.add(singleLayer.getDefaultStyle().getStyle());
                         }
                         infoObject=layerGroupInfo;
                     } else {
@@ -152,6 +179,7 @@ public class GetLegendGraphicKvpReader extends KvpRequestReader {
                     }
                 }
                 request.setLayers(layers);
+                request.setStyles(styles);
             } catch (IOException e) {
                 throw new ServiceException(e);
             } catch (NoSuchElementException ne) {
@@ -160,9 +188,6 @@ public class GetLegendGraphicKvpReader extends KvpRequestReader {
             } catch (Exception te) {
                 throw new ServiceException("Can't obtain the schema for the required layer.", te);
             }
-        } else {
-            layers.add(null);
-            request.setLayers(layers);
         }
 
         if (request.getFormat() == null) {
@@ -176,8 +201,8 @@ public class GetLegendGraphicKvpReader extends KvpRequestReader {
         try {
             parseOptionalParameters(request, infoObject, rawKvp);
             
-            if (layers.size() != request.getStyles().size()) {
-                String msg = layers.size() + " layers requested, but found " + request.getStyles().size()
+            if (layers.size() != styles.size()) {
+                String msg = layers.size() + " layers requested, but found " + styles.size()
                         + " styles specified. ";
                 throw new ServiceException(msg, getClass().getName());
             }
