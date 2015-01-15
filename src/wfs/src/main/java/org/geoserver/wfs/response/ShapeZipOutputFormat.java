@@ -110,6 +110,7 @@ public class ShapeZipOutputFormat extends WFSGetFeatureOutputFormat implements A
     private static final Logger LOGGER = Logging.getLogger(ShapeZipOutputFormat.class);
     public static final String GS_SHAPEFILE_CHARSET = "GS-SHAPEFILE-CHARSET";
     public static final String SHAPE_ZIP_DEFAULT_PRJ_IS_ESRI = "SHAPE-ZIP_DEFAULT_PRJ_IS_ESRI";
+    public static final String SHAPE_ZIP_DEFAULT_TIME_TO_STR = "SHAPE-ZIP_DEFAULT_TIME_TO_STR";
     
     private static final Configuration templateConfig = new Configuration();
     
@@ -246,7 +247,7 @@ public class ShapeZipOutputFormat extends WFSGetFeatureOutputFormat implements A
             if(!shapefileCreated) {
                 SimpleFeatureCollection fc;
                 fc = (SimpleFeatureCollection) collections.get(0);
-                fc = remapCollectionSchema(fc, Point.class);
+                fc = remapCollectionSchema(fc, Point.class, false);
                 writeCollectionToShapefile(fc, tempDir, charset, request);
                 createEmptyZipWarning(tempDir);
             }
@@ -354,7 +355,7 @@ public class ShapeZipOutputFormat extends WFSGetFeatureOutputFormat implements A
         GetFeatureRequest request) {
         FeatureTypeInfo ftInfo = getFeatureTypeInfo(c);
 
-        c = remapCollectionSchema(c, null);
+        c = remapCollectionSchema(c, null, isTimeCastEnabled(request));
         
         SimpleFeatureType schema = c.getSchema();
         String fileName = new FileNameSource(getClass()).getShapeName(ftInfo, null);
@@ -510,9 +511,11 @@ public class ShapeZipOutputFormat extends WFSGetFeatureOutputFormat implements A
      * respects the limitations of the shapefile format
      * @param fc
      * @param targetGeometry
+     * @param timeToStr
      * @return
      */
-    SimpleFeatureCollection remapCollectionSchema(SimpleFeatureCollection fc, Class targetGeometry) {
+    @SuppressWarnings("rawtypes")
+	SimpleFeatureCollection remapCollectionSchema(SimpleFeatureCollection fc, Class targetGeometry, Boolean timeToStr) {
         SimpleFeatureType schema = fc.getSchema();
         
         // force the proper output type if necessary
@@ -532,6 +535,28 @@ public class ShapeZipOutputFormat extends WFSGetFeatureOutputFormat implements A
                     }
                 }
             } 
+            tb.setName(fc.getSchema().getName());
+            SimpleFeatureType retyped = tb.buildFeatureType();
+            fc = new RetypingFeatureCollection(fc, retyped);
+        }
+        
+        // Force all timestamp type fields to string to avoid dbase limitation on
+        // on preservation of only date in values with date and time.
+        // Date type fields containing only date will remain unchanged.
+        if (timeToStr) {
+            SimpleFeatureTypeBuilder tb = new SimpleFeatureTypeBuilder();
+            for (AttributeDescriptor ad : schema.getAttributeDescriptors()) {
+                if (!(ad instanceof GeometryDescriptor)) {
+                    // Intercept all Timestamp fields and convert to string
+                    if (ad.getType().getBinding().equals(java.sql.Timestamp.class)) {
+                        tb.add(ad.getName().getLocalPart(), String.class);
+                    } else {
+                        tb.add(ad);
+                    }
+                } else {
+                    tb.add(ad);
+                }
+            }
             tb.setName(fc.getSchema().getName());
             SimpleFeatureType retyped = tb.buildFeatureType();
             fc = new RetypingFeatureCollection(fc, retyped);
@@ -606,7 +631,7 @@ public class ShapeZipOutputFormat extends WFSGetFeatureOutputFormat implements A
     private boolean writeCollectionToShapefiles(SimpleFeatureCollection c, File tempDir, Charset charset, 
         GetFeatureRequest request) {
         FeatureTypeInfo ftInfo = getFeatureTypeInfo(c);
-        c = remapCollectionSchema(c, null);
+        c = remapCollectionSchema(c, null, isTimeCastEnabled(request));
         SimpleFeatureType schema = c.getSchema();
         
         boolean shapefileCreated = false;
@@ -758,6 +783,36 @@ public class ShapeZipOutputFormat extends WFSGetFeatureOutputFormat implements A
         
         // if not specified let's use the shapefile default one
         return result != null ? result : Charset.forName("ISO-8859-1");
+    }
+    
+    /**
+     * Determine whether date fields will be casted to strings for shapefile output.
+     * This will only be applied to fields that include a time precision. Fields of type date will
+     * remain unchanged.
+     * This will eliminate issues with time truncation in output as a result of dbase limitations
+     * 
+     * @param request
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private Boolean isTimeCastEnabled(GetFeatureRequest request) {
+        Boolean stringifyTimes = false;
+        
+        Map<String, ?> formatOptions = request.getFormatOptions();
+        Object formatOptionValue = formatOptions.get("SHPTIMETOSTR");
+        
+        if (formatOptionValue != null) {
+        	stringifyTimes = Boolean.parseBoolean((String) formatOptionValue);
+            LOGGER.info("Overriding default configuration for shapefile output. "
+                    + "Forcing all dates to strings.");
+        } else {
+            WFSInfo bean = gs.getService(WFSInfo.class);
+            MetadataMap metadata = bean.getMetadata();
+            Boolean defaultTimeToStr = metadata.get(SHAPE_ZIP_DEFAULT_TIME_TO_STR, Boolean.class);
+            stringifyTimes = defaultTimeToStr != null && defaultTimeToStr.booleanValue();
+        }
+        
+        return stringifyTimes;
     }
 
     /**
