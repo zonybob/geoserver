@@ -142,7 +142,11 @@ public class WFSAdminPage extends BaseServiceAdminPage<WFSInfo> {
                     new StringResourceModel("otherSRS.message",WFSAdminPage.this, null));
             }
         });
-
+        
+        IModel<Boolean> shapeTimeToStrModel = new MapModel(metadataModel,
+                ShapeZipOutputFormat.SHAPE_ZIP_DEFAULT_TIME_TO_STR);
+        CheckBox defaultShapeTimeToStr = new CheckBox("shapeZipTimeToStr", shapeTimeToStrModel);
+        form.add(defaultShapeTimeToStr);
     }
     
     static class GMLPanel extends Panel {
