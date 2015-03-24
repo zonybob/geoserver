@@ -1557,6 +1557,7 @@
   <module>wfs</module>
   <module>wms</module>
   <module>kml</module>
+  <module>georss</module>
   <module>ows</module>
   <module>gwc</module>
   <module>rest</module>
