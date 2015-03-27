@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.apache.log4j.lf5.LogLevel;
 import org.geoserver.kml.KmlEncodingContext;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wms.WMSInfo;
@@ -37,51 +38,12 @@ import de.micromata.opengis.kml.v_2_2_0.TimeStamp;
 public class PlacemarkTimeDecoratorFactory implements KmlDecoratorFactory {
     
     static final Logger LOGGER = Logging.getLogger(PlacemarkTimeDecorator.class);
-
-    /**
-     * list of formats which correspond to the default formats in which freemarker outputs dates
-     * when a user calls the ?datetime(),?date(),?time() fuctions.
-     */
-    List<DateFormat> dtformats = new ArrayList<DateFormat>();
-
-    List<DateFormat> dformats = new ArrayList<DateFormat>();
-
-    List<DateFormat> tformats = new ArrayList<DateFormat>();
     
     public PlacemarkTimeDecoratorFactory() {
-        // add default freemarker ones first since they are likely to be used
-        // first, the order of this list matters.
-        // this is done in the constructor because otherwise there will be timezone
-        // contaminations between junit tests, and the factory is a singleton in the GS lifetime anyways 
 
-        dtformats.add(DateFormat.getDateTimeInstance());
-        dtformats.add(new SimpleDateFormat(FeatureTemplate.DATETIME_FORMAT_PATTERN));
-        addFormats(dtformats, "dd%MM%yy hh:mm:ss");
-        addFormats(dtformats, "MM%dd%yy hh:mm:ss");
-        // addFormats(formats,"yy%MM%dd hh:mm:ss" );
-        addFormats(dtformats, "dd%MMM%yy hh:mm:ss");
-        addFormats(dtformats, "MMM%dd%yy hh:mm:ss");
-        // addFormats(formats,"yy%MMM%dd hh:mm:ss" );
-
-        addFormats(dtformats, "dd%MM%yy hh:mm");
-        addFormats(dtformats, "MM%dd%yy hh:mm");
-        // addFormats(formats,"yy%MM%dd hh:mm" );
-        addFormats(dtformats, "dd%MMM%yy hh:mm");
-        addFormats(dtformats, "MMM%dd%yy hh:mm");
-        // addFormats(formats,"yy%MMM%dd hh:mm" );
-
-        dformats.add(DateFormat.getDateInstance());
-        dformats.add(new SimpleDateFormat(FeatureTemplate.DATE_FORMAT_PATTERN));
-        addFormats(dformats, "dd%MM%yy");
-        addFormats(dformats, "MM%dd%yy");
-        // addFormats(formats,"yy%MM%dd" );
-        addFormats(dformats, "dd%MMM%yy");
-        addFormats(dformats, "MMM%dd%yy");
-        // addFormats(formats,"yy%MMM%dd" );
-
-        tformats.add(DateFormat.getTimeInstance());
-        tformats.add(new SimpleDateFormat(FeatureTemplate.TIME_FORMAT_PATTERN));
     }
+
+
 
     void addFormats(List<DateFormat> formats, String pattern) {
         formats.add(new SimpleDateFormat(pattern.replaceAll("%", "-")));
@@ -220,7 +182,14 @@ public class PlacemarkTimeDecoratorFactory implements KmlDecoratorFactory {
          * Encodes a date as an xs:dateTime.
          */
         protected Date parseDateTime(String date) {
-
+            List<DateFormat> dtformats = new ArrayList<DateFormat>();
+        
+            List<DateFormat> dformats = new ArrayList<DateFormat>();
+        
+            List<DateFormat> tformats = new ArrayList<DateFormat>();
+            
+            initializeFormaters(dtformats, dformats, tformats);
+            
             // first try as date time
             Date d = parseDate(dtformats, date);
             if (d == null) {
@@ -254,6 +223,49 @@ public class PlacemarkTimeDecoratorFactory implements KmlDecoratorFactory {
             return null;
         }
 
+
+    /**
+     * list of formats which correspond to the default formats in which freemarker outputs dates
+     * when a user calls the ?datetime(),?date(),?time() fuctions.
+     */
+     
+     private void initializeFormaters(List<DateFormat> dtformats,
+                            List<DateFormat> dformats, List<DateFormat> tformats) {
+        // add default freemarker ones first since they are likely to be used
+        // first, the order of this list matters.
+        // this is done in the constructor because otherwise there will be timezone
+        // contaminations between junit tests, and the factory is a singleton in the GS lifetime anyways 
+
+        dtformats.add(DateFormat.getDateTimeInstance());
+        dtformats.add(new SimpleDateFormat(FeatureTemplate.DATETIME_FORMAT_PATTERN));
+        addFormats(dtformats, "dd%MM%yy hh:mm:ss");
+        addFormats(dtformats, "MM%dd%yy hh:mm:ss");
+        // addFormats(formats,"yy%MM%dd hh:mm:ss" );
+        addFormats(dtformats, "dd%MMM%yy hh:mm:ss");
+        addFormats(dtformats, "MMM%dd%yy hh:mm:ss");
+        // addFormats(formats,"yy%MMM%dd hh:mm:ss" );
+
+        addFormats(dtformats, "dd%MM%yy hh:mm");
+        addFormats(dtformats, "MM%dd%yy hh:mm");
+        // addFormats(formats,"yy%MM%dd hh:mm" );
+        addFormats(dtformats, "dd%MMM%yy hh:mm");
+        addFormats(dtformats, "MMM%dd%yy hh:mm");
+        // addFormats(formats,"yy%MMM%dd hh:mm" );
+
+        dformats.add(DateFormat.getDateInstance());
+        dformats.add(new SimpleDateFormat(FeatureTemplate.DATE_FORMAT_PATTERN));
+        addFormats(dformats, "dd%MM%yy");
+        addFormats(dformats, "MM%dd%yy");
+        // addFormats(formats,"yy%MM%dd" );
+        addFormats(dformats, "dd%MMM%yy");
+        addFormats(dformats, "MMM%dd%yy");
+        // addFormats(formats,"yy%MMM%dd" );
+
+        tformats.add(DateFormat.getTimeInstance());
+        tformats.add(new SimpleDateFormat(FeatureTemplate.TIME_FORMAT_PATTERN));
+        
+    }
+    
         /**
          * Parses a date as a string into a well-known format.
          */
